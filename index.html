@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouDays</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --a:#818cf8;--a2:#c084fc;
+  --bg:#0b0b14;--s1:rgba(255,255,255,.04);--s2:rgba(255,255,255,.07);
+  --bd:rgba(255,255,255,.08);--t:#e8e6ff;--m:#6b6980;
+  --ok:#4ade80;--warn:#fbbf24;
+}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--t);min-height:100vh;line-height:1.5;font-size:15px;}
+.glow{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 40% at 20% 10%,color-mix(in srgb,var(--a) 10%,transparent),transparent 55%),
+             radial-gradient(ellipse 50% 30% at 85% 90%,color-mix(in srgb,var(--a2) 7%,transparent),transparent 55%);}
+
+/* WIZARD */
+#W{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px 80px;}
+.w-topbar{width:100%;max-width:560px;display:flex;justify-content:space-between;align-items:center;margin-bottom:36px;}
+.w-brand{font-family:Syne,sans-serif;font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.w-step-lbl{font-size:12px;color:var(--m);font-weight:500;}
+.w-progress{display:flex;gap:4px;margin-bottom:32px;width:100%;max-width:560px;}
+.w-dot{flex:1;height:3px;border-radius:2px;background:var(--bd);transition:background .3s;}
+.w-dot.done{background:var(--a);}
+.w-dot.active{background:var(--a2);}
+.w-box{width:100%;max-width:560px;background:var(--s1);border:1px solid var(--bd);border-radius:20px;padding:36px;}
+.w-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--a);font-weight:600;margin-bottom:8px;}
+.w-title{font-family:Syne,sans-serif;font-size:26px;font-weight:900;margin-bottom:6px;line-height:1.15;}
+.w-desc{font-size:14px;color:var(--m);margin-bottom:28px;line-height:1.6;}
+.gap-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:12px;padding:16px 20px;margin-bottom:24px;}
+.gap-box-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--warn);font-weight:700;margin-bottom:10px;}
+.gap-rule{font-size:13px;display:flex;gap:8px;margin-bottom:5px;color:var(--t);opacity:.85;}
+.lbl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--m);margin-bottom:7px;margin-top:18px;}
+.inp,.txta,.sel{width:100%;padding:11px 14px;border-radius:10px;background:var(--s2);border:1px solid var(--bd);color:var(--t);font-family:Inter,sans-serif;font-size:14px;transition:border-color .2s;}
+.inp:focus,.txta:focus,.sel:focus{outline:none;border-color:var(--a);}
+.txta{resize:vertical;min-height:80px;line-height:1.5;}
+.neg-w{font-size:12px;color:var(--warn);margin-top:5px;display:none;}
+.neg-w.on{display:block;}
+.freq-box{background:rgba(0,0,0,.2);border-radius:12px;padding:16px;margin-top:12px;}
+.freq-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--a);margin-bottom:12px;}
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:480px){.act-grid{grid-template-columns:1fr;}}
+.act-wrap{display:flex;align-items:center;gap:8px;}
+.act-n{width:22px;height:22px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--m);flex-shrink:0;}
+.btn-row{display:flex;gap:10px;margin-top:28px;}
+.btn{padding:11px 22px;border:none;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;font-weight:600;font-size:14px;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-a{background:linear-gradient(135deg,var(--a),var(--a2));color:white;box-shadow:0 4px 16px color-mix(in srgb,var(--a) 25%,transparent);}
+.btn-a:hover{transform:translateY(-1px);box-shadow:0 6px 24px color-mix(in srgb,var(--a) 35%,transparent);}
+.btn-g{background:var(--s2);color:var(--t);border:1px solid var(--bd);}
+.btn-g:hover{border-color:var(--a);}
+.persona-card{background:var(--s2);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:12px;position:relative;}
+.persona-del{position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;color:var(--m);font-size:18px;line-height:1;}
+.persona-del:hover{color:#f87171;}
+.p-num{font-size:11px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;}
+.pg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+@media(max-width:480px){.pg2{grid-template-columns:1fr;}}
+.rev-area{background:var(--s2);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px;}
+.rev-name{font-family:Syne,sans-serif;font-weight:800;font-size:15px;margin-bottom:8px;}
+.rev-meta{font-size:13px;color:var(--m);margin-bottom:10px;line-height:1.5;}
+.tags{display:flex;flex-wrap:wrap;gap:5px;}
+.tag{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:color-mix(in srgb,var(--a) 13%,transparent);color:var(--a);border:1px solid color-mix(in srgb,var(--a) 22%,transparent);}
+.tag.w{background:color-mix(in srgb,var(--a2) 13%,transparent);color:var(--a2);border-color:color-mix(in srgb,var(--a2) 22%,transparent);}
+.tag.m{background:color-mix(in srgb,var(--ok) 13%,transparent);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 22%,transparent);}
+
+/* DASHBOARD */
+#D{display:none;position:relative;z-index:1;}
+.app{display:flex;min-height:100vh;}
+.sb{width:64px;height:100vh;position:sticky;top:0;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:6px;border-right:1px solid var(--bd);background:rgba(11,11,20,.95);backdrop-filter:blur(10px);flex-shrink:0;}
+.sb-logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:900;font-size:15px;color:white;margin-bottom:14px;cursor:pointer;}
+.sb-btn{width:40px;height:40px;border-radius:10px;background:transparent;border:none;color:var(--m);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.sb-btn:hover,.sb-btn.on{background:var(--s2);color:var(--a);}
+.sb-bot{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.main{flex:1;overflow-y:auto;padding:36px 32px;max-width:960px;}
+@media(max-width:680px){.main{padding:20px;}}
+.pg-title{font-family:Syne,sans-serif;font-size:28px;font-weight:900;margin-bottom:4px;}
+.pg-sub{font-size:13px;color:var(--m);margin-bottom:32px;}
+.toprow{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:24px;margin-bottom:18px;}
+.sec-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--m);margin-bottom:16px;}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px;}
+.kcard{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:20px;}
+.kl{font-size:11px;color:var(--m);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:8px;}
+.kv{font-family:Syne,sans-serif;font-size:32px;font-weight:900;color:var(--a);line-height:1;}
+.ks{font-size:12px;color:var(--m);margin-top:4px;}
+.pbar{height:3px;background:var(--bd);border-radius:2px;margin-top:12px;overflow:hidden;}
+.pfill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:2px;transition:width .6s;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
+@media(max-width:680px){.two{grid-template-columns:1fr;}}
+.pet-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;position:relative;min-height:220px;}
+.bub{position:absolute;top:10px;background:white;color:#0b0b14;padding:8px 14px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.2);white-space:nowrap;display:none;pointer-events:none;}
+.bub::after{content:"";position:absolute;bottom:-5px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:white;}
+.pet-lbl{font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--a);margin-top:10px;}
+.pet-sub{font-size:12px;color:var(--m);margin-top:3px;}
+.dbar{display:flex;flex-wrap:wrap;gap:3px;}
+.dd{width:9px;height:9px;border-radius:2px;background:var(--bd);}
+.dd.done{background:var(--a);}
+.dd.today{background:var(--a2);box-shadow:0 0 5px var(--a2);}
+.mpill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:color-mix(in srgb,var(--a) 13%,transparent);color:var(--a);border:1px solid color-mix(in srgb,var(--a) 22%,transparent);}
+.arow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--s2);border:1px solid var(--bd);margin-bottom:6px;cursor:pointer;transition:all .2s;user-select:none;}
+.arow:hover{border-color:color-mix(in srgb,var(--a) 40%,transparent);}
+.arow.dn{opacity:.45;}
+.arow.dn .at{text-decoration:line-through;}
+.ach{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:11px;color:white;flex-shrink:0;transition:all .2s;}
+.arow.dn .ach{background:var(--ok);border-color:var(--ok);}
+.at{font-size:14px;flex:1;}
+.ftabs{display:flex;gap:6px;margin-bottom:16px;}
+.ft{padding:6px 14px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;background:transparent;color:var(--m);font-family:Inter,sans-serif;transition:all .2s;}
+.ft.on{background:var(--s2);color:var(--a);}
+.pred-n{font-family:Syne,sans-serif;font-size:60px;font-weight:900;background:linear-gradient(135deg,var(--ok),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;line-height:1;}
+.tl-i{display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--s2);border-radius:10px;margin-bottom:6px;font-size:13px;}
+.tl-d{color:var(--a);font-weight:600;min-width:60px;font-size:11px;}
+.chart-w{height:220px;margin:12px 0;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:color-mix(in srgb,var(--bg) 97%,white);border:1px solid var(--bd);border-radius:20px;padding:32px;max-width:480px;width:100%;max-height:82vh;overflow-y:auto;}
+.modal-title{font-family:Syne,sans-serif;font-size:20px;font-weight:900;margin-bottom:20px;}
+.cgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:14px;}
+.copt{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s;}
+.copt.sel{border-color:white;transform:scale(1.1);}
+.share-box{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--m);display:flex;align-items:center;gap:10px;}
+.copy-btn{padding:5px 12px;border-radius:7px;background:var(--a);color:white;border:none;cursor:pointer;font-weight:600;font-size:12px;white-space:nowrap;}
+.sstats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+.sstat{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:12px 18px;text-align:center;}
+.toast{position:fixed;bottom:22px;right:22px;z-index:2000;background:var(--a);color:white;padding:11px 20px;border-radius:10px;font-weight:600;font-size:13px;animation:ti .35s;box-shadow:0 6px 20px color-mix(in srgb,var(--a) 40%,transparent);}
+@keyframes ti{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* PET PAGE — Tom Cat style */
+.pet-page{padding-bottom:40px;}
+
+/* Stage: ocupa casi todo el viewport, como Tom Cat */
+.pet-stage{
+  position:relative;
+  width:calc(100% + 64px);   /* rompe el padding del .main */
+  margin-left:-32px;
+  height:calc(100vh - 120px);
+  min-height:480px;
+  max-height:780px;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 80%,color-mix(in srgb,var(--a) 14%,transparent),transparent 70%),
+    linear-gradient(180deg,#0d0d1a 0%,#111128 60%,#0b0b14 100%);
+  overflow:hidden;
+  cursor:pointer;
+}
+@media(max-width:680px){.pet-stage{width:calc(100% + 40px);margin-left:-20px;}}
+
+.pet-stage-canvas{display:block;width:100%;height:100%;position:absolute;inset:0;}
+
+/* Badge estado — esquina superior derecha */
+.pet-state-badge{
+  position:absolute;top:14px;right:14px;
+  padding:5px 13px;border-radius:20px;font-size:11px;font-weight:700;
+  letter-spacing:.6px;text-transform:uppercase;z-index:4;transition:all .5s;
+  backdrop-filter:blur(8px);
+}
+
+/* Burbuja de diálogo — arriba centrado */
+.pet-speech-bubble{
+  position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  background:white;color:#0b0b14;padding:10px 20px;border-radius:16px;
+  font-size:14px;font-weight:700;white-space:nowrap;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);display:none;pointer-events:none;z-index:10;
+  animation:bpop .2s ease-out;
+}
+.pet-speech-bubble::after{content:"";position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);width:12px;height:12px;background:white;}
+@keyframes bpop{from{transform:translateX(-50%) scale(.8);opacity:0;}to{transform:translateX(-50%) scale(1);opacity:1;}}
+
+/* Botones de acción flotantes en la parte INFERIOR del stage — estilo Tom Cat */
+.pet-actions-overlay{
+  position:absolute;bottom:0;left:0;right:0;z-index:5;
+  display:flex;justify-content:center;align-items:flex-end;gap:10px;
+  padding:0 16px 16px;
+  background:linear-gradient(to top,rgba(11,11,20,.85) 0%,transparent 100%);
+}
+.pact{
+  width:58px;height:58px;border-radius:50%;
+  background:rgba(255,255,255,.12);
+  border:2px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .18s;user-select:none;flex-shrink:0;
+}
+.pact:hover{background:color-mix(in srgb,var(--a) 30%,rgba(255,255,255,.15));border-color:color-mix(in srgb,var(--a) 60%,transparent);transform:translateY(-4px) scale(1.08);}
+.pact:active{transform:scale(.94);}
+.pact.cd{opacity:.3;pointer-events:none;}
+.pact-ico{font-size:20px;line-height:1;}
+.pact-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.7);margin-top:2px;letter-spacing:.2px;}
+@media(max-width:480px){.pact{width:50px;height:50px;}.pact-ico{font-size:18px;}}
+
+/* XP y stats DEBAJO del stage */
+.pet-xp-wrap{display:flex;align-items:center;gap:12px;margin:14px 0;}
+.pet-xp-info{flex:1;}
+.pet-xp-title{font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px;}
+.pet-xp-track{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;}
+.pet-xp-fill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:3px;transition:width 1s ease;}
+.pet-xp-val{font-family:Syne,sans-serif;font-size:18px;font-weight:900;color:var(--a);}
+.pet-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:560px){.pet-stats-grid{grid-template-columns:repeat(2,1fr);}}
+.pstat{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:14px 12px;text-align:center;}
+.pstat-val{font-family:Syne,sans-serif;font-size:24px;font-weight:900;color:var(--a);line-height:1;}
+.pstat-lbl{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-top:4px;}
+.pstat-bar{height:2px;border-radius:1px;background:var(--bd);margin-top:8px;overflow:hidden;}
+.pstat-fill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:1px;transition:width .8s ease;}
+
+/* PERSONALIZACIÓN MASCOTA */
+.pet-custom-section{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:20px;margin-bottom:14px;}
+.pet-custom-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--a);margin-bottom:14px;}
+.pet-custom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px;margin-bottom:12px;}
+.pco{width:100%;aspect-ratio:1;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--s2);border:2px solid transparent;transition:all .18s;}
+.pco:hover{border-color:color-mix(in srgb,var(--a) 40%,transparent);}
+.pco.sel{border-color:var(--a);background:color-mix(in srgb,var(--a) 15%,transparent);}
+.pco-color{width:28px;height:28px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all .18s;}
+.pco-color.sel{border-color:white;transform:scale(1.15);}
+.pet-name-row{display:flex;gap:8px;align-items:center;margin-top:10px;}
+.pet-name-row .inp{flex:1;}
+
+/* REFLEXIONES */
+.reflect-box{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:20px;margin-bottom:14px;}
+.reflect-log{max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.reflect-item{background:var(--s2);border-radius:10px;padding:10px 14px;}
+.reflect-text{font-size:13px;line-height:1.5;}
+.reflect-meta{font-size:10px;color:var(--m);margin-top:3px;}
+.reflect-input-row{display:flex;gap:8px;}
+.reflect-ta{flex:1;min-height:52px;font-size:13px;resize:none;}
+.reflect-send{padding:0 16px;border-radius:10px;background:linear-gradient(135deg,var(--a),var(--a2));color:white;border:none;cursor:pointer;font-weight:700;font-size:18px;}
+
+/* EDITAR METAS */
+.meta-edit-btn{font-size:11px;padding:4px 10px;border-radius:7px;border:1px solid var(--bd);background:transparent;color:var(--m);cursor:pointer;transition:all .18s;}
+.meta-edit-btn:hover{border-color:var(--a);color:var(--a);}
+.edit-modal .modal{max-width:560px;}
+
+/* ── MODO NOCHE ──────────────────────────────── */
+body.night-mode{
+  --bg:#060610;--s1:rgba(255,255,255,.03);--s2:rgba(255,255,255,.055);
+  --bd:rgba(255,255,255,.06);--t:#ddd8ff;--m:#58566e;
+}
+.night-toggle{
+  width:40px;height:40px;border-radius:10px;background:transparent;border:none;
+  color:var(--m);cursor:pointer;font-size:18px;display:flex;align-items:center;
+  justify-content:center;transition:all .2s;
+}
+.night-toggle:hover{background:var(--s2);color:var(--a);}
+
+/* ── ÁREA TOGGLE CARDS ───────────────────────── */
+.area-toggle-card{
+  background:var(--s2);border:1.5px solid var(--bd);border-radius:14px;
+  padding:14px 16px;cursor:pointer;transition:all .2s;user-select:none;
+}
+.area-toggle-card.active{
+  border-color:color-mix(in srgb,var(--a) 50%,transparent);
+  background:color-mix(in srgb,var(--a) 8%,transparent);
+}
+.area-toggle-card:not(.active){opacity:.5;}
+.area-toggle-icon{font-size:22px;width:32px;text-align:center;}
+.area-toggle-check{
+  width:22px;height:22px;border-radius:6px;border:1.5px solid var(--bd);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:white;flex-shrink:0;transition:all .2s;font-weight:700;
+}
+.area-toggle-card.active .area-toggle-check{
+  background:var(--a);border-color:var(--a);
+}
+
+/* ── PRIORITY SLIDER ─────────────────────────── */
+.prio-slider{
+  width:100%;-webkit-appearance:none;appearance:none;
+  height:4px;border-radius:2px;background:var(--bd);outline:none;cursor:pointer;
+}
+.prio-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--a);cursor:pointer;box-shadow:0 0 6px color-mix(in srgb,var(--a) 60%,transparent);
+}
+.prio-slider::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;border:none;
+  background:var(--a);cursor:pointer;
+}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<!-- WIZARD -->
+<div id="W">
+  <div class="w-topbar">
+    <div class="w-brand">YouDays</div>
+    <div class="w-step-lbl" id="wStepLbl">Inicio</div>
+  </div>
+  <div class="w-progress" id="wProg"></div>
+  <div class="w-box" id="wBox"></div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="D">
+  <div class="app">
+    <nav class="sb">
+      <div class="sb-logo" id="sbLogo">Y</div>
+      <button class="night-toggle" id="nightBtn" onclick="toggleNight()" title="Modo noche">🌙</button>
+      <button class="sb-btn on" id="nb-dash" onclick="goSec('dash')" title="Dashboard">📊</button>
+      <button class="sb-btn" id="nb-pet" onclick="goSec('pet')" title="Mascota">🐾</button>
+      <button class="sb-btn" id="nb-metas" onclick="goSec('metas')" title="Mis Metas">🎯</button>
+      <button class="sb-btn" id="nb-hist" onclick="goSec('hist')" title="Histórico">📈</button>
+      <button class="sb-btn" id="nb-pred" onclick="goSec('pred')" title="Predicción">🔮</button>
+      <div class="sb-bot">
+        <button class="sb-btn" onclick="openM('share')" title="Compartir">🔗</button>
+        <button class="sb-btn" onclick="openM('cfg')" title="Configuración">⚙️</button>
+        <button class="sb-btn" onclick="reopenWizard()" title="Editar cuestionario" style="font-size:14px;">📝</button>
+        <button class="sb-btn" onclick="doReset()" title="Reiniciar todo">🔄</button>
+      </div>
+    </nav>
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <div id="sec-dash">
+        <div class="toprow">
+          <div>
+            <div class="pg-title" id="dbTitle">YouDays</div>
+            <div class="pg-sub">Tu proyecto de expansión · 90 días</div>
+            <div style="font-size:12px;color:var(--m);margin-top:6px;">Inicio: <span id="startDateLbl">Hoy</span></div>
+          </div>
+          <span style="font-size:13px;color:var(--m);padding-top:6px;" id="dayLbl">Día 0/90</span>
+        </div>
+        <div class="two">
+          <div class="card pet-wrap" style="cursor:pointer;" onclick="goSec('pet')">
+            <div class="bub" id="bub"></div>
+            <canvas id="dashPetCanvas" width="160" height="180" style="width:160px;height:180px;cursor:pointer;"></canvas>
+            <div class="pet-lbl" id="petLbl">Lumen</div>
+            <div class="pet-sub">Toca para ver tu mascota</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="kcard"><div class="kl">Progreso Global</div><div class="kv" id="kPct">0%</div><div class="pbar"><div class="pfill" id="kBar" style="width:0%"></div></div></div>
+            <div class="kcard"><div class="kl">Acciones Hoy</div><div class="kv" id="kToday">0</div><div class="ks" id="kTodaySub">de 0 completadas</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="sec-title" style="margin-bottom:0;">90 Días</div>
+            <span style="font-size:12px;color:var(--m);" id="startLbl"></span>
+          </div>
+          <div class="dbar" id="dBar"></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
+            <div class="sec-title" style="margin-bottom:0;">Resumen</div>
+            <button class="btn btn-g" onclick="reopenWizard()" style="font-size:12px;padding:7px 14px;gap:5px;">📝 Editar cuestionario</button>
+          </div>
+          <div id="dSummary" style="margin-top:16px;"></div>
+        </div>
+      </div>
+
+      <!-- MASCOTA -->
+      <div id="sec-pet" style="display:none;">
+        <!-- Header compacto -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <div class="pg-title" id="petPageTitle">Lumen</div>
+            <div class="pg-sub" id="petPageSub">Tu compañero de 90 días</div>
+          </div>
+        </div>
+
+        <div class="pet-page">
+          <!-- STAGE GRANDE — tipo Tom Cat -->
+          <div class="pet-stage" onclick="handleStageTap()">
+            <div class="pet-speech-bubble" id="petSpeechBig"></div>
+            <div class="pet-state-badge" id="petStateBadge">Feliz</div>
+            <canvas id="petPageCanvas" class="pet-stage-canvas"></canvas>
+            <!-- Acciones flotantes en la base del stage -->
+            <div class="pet-actions-overlay" onclick="event.stopPropagation()">
+              <div class="pact" id="pa-feed" onclick="petAction('feed')"><div class="pact-ico">🍎</div><div class="pact-lbl">Alimentar</div></div>
+              <div class="pact" id="pa-play" onclick="petAction('play')"><div class="pact-ico">⚡</div><div class="pact-lbl">Entrenar</div></div>
+              <div class="pact" id="pa-hug" onclick="petAction('hug')"><div class="pact-ico">🤍</div><div class="pact-lbl">Animar</div></div>
+              <div class="pact" id="pa-goal" onclick="petAction('goal')"><div class="pact-ico">🎯</div><div class="pact-lbl">Meta</div></div>
+              <div class="pact" id="pa-sleep" onclick="petAction('sleep')"><div class="pact-ico">🌙</div><div class="pact-lbl">Descansar</div></div>
+              <div class="pact" id="pa-spark" onclick="petAction('spark')"><div class="pact-ico">✨</div><div class="pact-lbl">Inspirar</div></div>
+            </div>
+          </div>
+
+          <!-- XP BAR -->
+          <div class="pet-xp-wrap">
+            <div class="pet-xp-info">
+              <div class="pet-xp-title" id="petLvlTitle">Nivel 1 · Lumen</div>
+              <div class="pet-xp-track"><div class="pet-xp-fill" id="petXpFill" style="width:0%"></div></div>
+            </div>
+            <div class="pet-xp-val" id="petXpVal">0 XP</div>
+          </div>
+
+          <!-- STATS -->
+          <div class="pet-stats-grid">
+            <div class="pstat"><div class="pstat-val" id="ps-racha">0</div><div class="pstat-lbl">🔥 Racha</div><div class="pstat-bar"><div class="pstat-fill" id="pb-racha" style="width:0%"></div></div></div>
+            <div class="pstat"><div class="pstat-val" id="ps-prog">0%</div><div class="pstat-lbl">🎯 Progreso</div><div class="pstat-bar"><div class="pstat-fill" id="pb-prog" style="width:0%"></div></div></div>
+            <div class="pstat"><div class="pstat-val" id="ps-tend">→</div><div class="pstat-lbl">📈 Tendencia</div><div class="pstat-bar"><div class="pstat-fill" id="pb-tend" style="width:50%"></div></div></div>
+            <div class="pstat"><div class="pstat-val" id="ps-ref">0</div><div class="pstat-lbl">💬 Notas</div><div class="pstat-bar"><div class="pstat-fill" id="pb-ref" style="width:0%"></div></div></div>
+          </div>
+
+          <!-- PERSONALIZACIÓN -->
+          <div class="pet-custom-section">
+            <div class="pet-custom-title">🎨 Personalizar mascota</div>
+            <div style="font-size:11px;color:var(--m);margin-bottom:10px;">Forma del cuerpo</div>
+            <div class="pet-custom-grid" id="shapeGrid"></div>
+            <div style="font-size:11px;color:var(--m);margin-bottom:10px;">Tipo de ojos</div>
+            <div class="pet-custom-grid" id="eyesGrid"></div>
+            <div style="font-size:11px;color:var(--m);margin-bottom:10px;">Accesorio</div>
+            <div class="pet-custom-grid" id="accGrid"></div>
+            <div style="font-size:11px;color:var(--m);margin-bottom:10px;">Color</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;" id="colorGrid"></div>
+            <div class="pet-name-row">
+              <input class="inp" id="petNameInput" placeholder="Nombre de tu mascota" style="max-width:220px;">
+              <button class="btn btn-a" onclick="savePetCustom()" style="padding:10px 18px;">Guardar</button>
+            </div>
+          </div>
+
+          <!-- REFLEXIONES -->
+          <div class="reflect-box">
+            <div class="pet-custom-title">💬 Reflexiones del proyecto</div>
+            <div class="reflect-log" id="reflectLog"></div>
+            <div class="reflect-input-row">
+              <textarea class="txta reflect-ta" id="reflectInput" placeholder="¿Qué aprendiste? ¿Cómo te sientes con tu avance?"></textarea>
+              <button class="reflect-send" onclick="addReflection()">→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- METAS -->
+      <div id="sec-metas" style="display:none;">
+        <div class="toprow">
+          <div><div class="pg-title">Mis Metas</div><div class="pg-sub">Claro · Específico · Medible · 90 días</div></div>
+        </div>
+        <div class="ftabs">
+          <button class="ft on" onclick="setF('daily',this)">Diarias</button>
+          <button class="ft" onclick="setF('weekly',this)">Semanales</button>
+          <button class="ft" onclick="setF('monthly',this)">Mensuales</button>
+        </div>
+        <div id="mCon"></div>
+      </div>
+
+      <!-- HISTÓRICO -->
+      <div id="sec-hist" style="display:none;">
+        <div class="pg-title">Histórico</div><div class="pg-sub">Tu trayectoria de 90 días</div>
+        <div class="card" style="margin-top:20px;"><div class="sec-title">Progreso Diario</div><div class="chart-w"><canvas id="hChart"></canvas></div></div>
+        <div class="card"><div class="sec-title">Timeline</div><div id="tlList" style="max-height:300px;overflow-y:auto;margin-top:4px;"></div></div>
+      </div>
+
+      <!-- PREDICCIÓN -->
+      <div id="sec-pred" style="display:none;">
+        <div class="pg-title">Predicciones</div><div class="pg-sub">Probabilidad de éxito al día 90</div>
+        <div class="card" style="text-align:center;padding:40px;margin-top:20px;">
+          <div class="sec-title">Probabilidad de Éxito</div>
+          <div class="pred-n" id="predN">—</div>
+          <div style="font-size:14px;color:var(--m);margin-top:12px;" id="predLbl">Completa acciones para ver tu predicción</div>
+        </div>
+        <div class="card"><div class="sec-title">Por Meta</div><div id="predBM"></div></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAL CFG -->
+<div class="modal-bg" id="mCfg">
+  <div class="modal">
+    <div class="modal-title">⚙️ Configuración</div>
+    <span class="lbl" style="margin-top:0;">Nombre de la App</span><input class="inp" id="cfgApp" style="margin-bottom:12px;" placeholder="YouDays">
+    <span class="lbl">Tu Nombre</span><input class="inp" id="cfgUser" style="margin-bottom:12px;" placeholder="Nombre">
+    <span class="lbl">Color de Acento</span><div class="cgrid" id="cGrid"></div>
+    <div class="btn-row"><button class="btn btn-a" onclick="saveCfg()">Guardar</button><button class="btn btn-g" onclick="closeM()">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- MODAL SHARE -->
+<div class="modal-bg" id="mShare">
+  <div class="modal">
+    <div class="modal-title">🔗 Compartir con Coach</div>
+    <div class="share-box"><span id="sUrl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span><button class="copy-btn" onclick="copyUrl()">Copiar</button></div>
+    <div class="sstats" id="sStats"></div>
+    <button class="btn btn-g" style="width:100%;margin-top:16px;" onclick="closeM()">Cerrar</button>
+  </div>
+</div>
+
+<!-- MODAL EDITAR META -->
+<div class="modal-bg edit-modal" id="mEdit">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title">✏️ Editar Meta</div>
+    <div id="editModalBody"></div>
+    <div class="btn-row">
+      <button class="btn btn-a" onclick="saveEditMeta()">Guardar cambios</button>
+      <button class="btn btn-g" onclick="closeM()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTES ──────────────────────────────────────────────────────────────
+const COLORS=["#818cf8","#c084fc","#22d3ee","#34d399","#fbbf24","#fb7185","#a3e635","#60a5fa"];
+const NEG=/\b(no quiero|nunca|jamás|ni más|ni menos|ni por lo menos|dejar de|ya no|dejaré de)\b/i;
+const MT={personal:{e:"🧠",l:"Personal"},profesional:{e:"💼",l:"Profesional"},relaciones:{e:"❤️",l:"Relaciones"},espiritual:{e:"🧘",l:"Espiritual"},comunitaria:{e:"🌱",l:"Comunitaria"}};
+
+// Opciones de personalización
+const PET_SHAPES=[{id:"round",lbl:"🐱"},{id:"fat",lbl:"🐻"},{id:"slim",lbl:"🦊"},{id:"fluffy",lbl:"🐶"},{id:"tiny",lbl:"🐭"},{id:"big",lbl:"🦁"}];
+const PET_EYES=[{id:"round",lbl:"●●"},{id:"star",lbl:"★★"},{id:"heart",lbl:"♥♥"},{id:"sleepy",lbl:"─ ─"},{id:"wink",lbl:"^●"},{id:"wide",lbl:"◉◉"}];
+const PET_ACCS=[{id:"none",lbl:"🚫"},{id:"hat",lbl:"🎩"},{id:"crown",lbl:"👑"},{id:"bow",lbl:"🎀"},{id:"glasses",lbl:"👓"},{id:"headband",lbl:"🎖️"}];
+const PET_COLORS=["#818cf8","#c084fc","#f472b6","#34d399","#fbbf24","#60a5fa","#fb923c","#a78bfa","#f87171","#4ade80"];
+
+const PET_STATES={
+  thriving:{label:"¡Imparable!",col:"#4ade80"},
+  happy:{label:"Feliz",col:"#818cf8"},
+  neutral:{label:"Tranquilo",col:"#94a3b8"},
+  worried:{label:"Preocupado",col:"#fbbf24"},
+  sad:{label:"Triste",col:"#fb7185"}
+};
+
+const DIALOGS={
+  thriving:["¡Nada puede detenerte! 🔥","¡Estás en llamas! ⚡","¡Imparable! 🚀","¡Racha épica! 💜"],
+  happy:["¡Buen trabajo! 😊","¡Así se hace! 💪","¡Orgulloso/a de ti! 🌟","¡Avanzamos! ✨"],
+  neutral:["¿Qué tal el día? 👀","Aquí estoy contigo 🤍","Un paso a la vez 🌱","¿Listo/a? ✅"],
+  worried:["¿Todo bien? Me preocupo 😟","¡Puedes hacerlo! 💛","¡Un día a la vez! 🙏","¡Vuelve! ⚡"],
+  sad:["Te extraño mucho 😢","¿Qué pasó? 💔","No te rindas 🌙","Juntos podemos 🤍"]
+};
+const ACT_DIALOGS={
+  feed:["¡Mmm, gracias! 🍎","¡Delicioso! ✨","¡Me das fuerza! 💪"],
+  play:["¡A entrenar! ⚡","¡Fuerza! 💥","¡Vamos! 🔥"],
+  hug:["¡Te quiero! 🤍","¡Cálido abrazo! 💜","¡Tú puedes! ✨"],
+  goal:["¡Recuerdo tu meta! 🎯","¡Enfocados! 💼","¡90 días! 🚀"],
+  sleep:["Descansando... 🌙","Recarga 💤","Mañana más fuertes ⭐"],
+  spark:["¡Inspiración! ✨","¡El momento es ahora! 🌟","¡Chispa! ⚡"]
+};
+
+// ── ESTADO ──────────────────────────────────────────────────────────────────
+let cfg={appName:"YouDays",user:"Yo",accent:"#818cf8",startDate:new Date().toISOString().split("T")[0]};
+let metas=[],log=[],curF="daily",chartI=null;
+let petCfg={name:"Lumen",shape:"round",eyes:"round",acc:"none",color:"#818cf8",xp:0,reflections:[]};
+let petCooldowns={};
+let editingMetaId=null;
+
+// WIZARD
+const STEPS=[{id:"welcome"},{id:"identity"},{id:"personal"},{id:"profesional"},{id:"relaciones"},{id:"espiritual"},{id:"comunitaria"},{id:"review"}];
+let step=0;
+let W={nombre:"",contrato:"",compromiso:"",
+  personal:{meta:"",miedo:"",requiere:"",inspiracion:"",daily:["","","",""],weekly:["","","",""],monthly:["",""]},
+  profesional:{meta:"",miedo:"",requiere:"",inspiracion:"",daily:["","","",""],weekly:["","","",""],monthly:["",""]},
+  relaciones:[{nombre:"",relacion:"",miedo:"",daily:[""],weekly:[""],monthly:[""]}],
+  espiritual:{meta:"",miedo:"",requiere:"",inspiracion:"",daily:["",""],weekly:[""],monthly:[""]},
+  comunitaria:{meta:"",acciones:["","",""]},equipo:{inst:""}};
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+function init(){
+  try{
+    const sc=localStorage.getItem("yd3_cfg");if(sc)cfg={...cfg,...JSON.parse(sc)};
+    const sm=localStorage.getItem("yd3_metas");if(sm)metas=JSON.parse(sm);
+    const sl=localStorage.getItem("yd3_log");if(sl)log=JSON.parse(sl);
+    const sp=localStorage.getItem("yd3_pet");if(sp)petCfg={...petCfg,...JSON.parse(sp)};
+    if(localStorage.getItem("yd3_done")==="1"){launch();return;}
+  }catch(e){}
+  applyAccent();drawProg();drawStep();
+}
+
+function save(){
+  localStorage.setItem("yd3_cfg",JSON.stringify(cfg));
+  localStorage.setItem("yd3_metas",JSON.stringify(metas));
+  localStorage.setItem("yd3_log",JSON.stringify(log));
+  localStorage.setItem("yd3_pet",JSON.stringify(petCfg));
+}
+
+function reopenWizard(){
+  // Abre el wizard para editar metas SIN borrar el progreso
+  document.getElementById("D").style.display="none";
+  document.getElementById("W").style.display="flex";
+  step=0;
+  // Pre-cargar datos actuales en W desde metas guardadas
+  if(cfg.user)W.nombre=cfg.user;
+  if(cfg.startDate)W.startDate=cfg.startDate;
+  if(cfg.priorities)W.priorities=cfg.priorities;
+  // Restaurar activeAreas desde metas existentes
+  if(!W.activeAreas)W.activeAreas={personal:true,profesional:true,relaciones:true,espiritual:true,comunitaria:true};
+  metas.forEach(m=>{
+    if(!W.activeAreas[m.type])W.activeAreas[m.type]=true;
+  });
+  drawProg();drawStep();
+  stopPagePet();
+  if(dashRaf){cancelAnimationFrame(dashRaf);dashRaf=null;}
+  toast("Edita tu cuestionario — tu progreso se conserva 🔒");
+}
+
+function doReset(){
+  const modal=document.createElement("div");
+  modal.className="modal-bg open";
+  modal.id="resetModal";
+  modal.innerHTML=`
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-title">🔄 Comenzar de nuevo</div>
+      <div style="font-size:14px;color:var(--m);line-height:1.6;margin-bottom:20px;">
+        <p>¿Estás seguro/a de que quieres reiniciar completamente?</p>
+        <p style="margin-top:10px;font-size:13px;opacity:.8;">Se borrarán <strong>todas</strong> tus metas, progreso, datos y la mascota.</p>
+        <p style="margin-top:12px;color:var(--a);font-weight:600;">Pero esto también significa: <strong>nuevo comienzo, nuevas oportunidades, nueva energía 💪</strong></p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-g" onclick="closeResetModal()">Cancelar</button>
+        <button class="btn btn-a" onclick="confirmReset()">Sí, empezar de nuevo 🚀</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function closeResetModal(){
+  const m=document.getElementById("resetModal");
+  if(m)m.remove();
+}
+
+function confirmReset(){
+  closeResetModal();
+  ["yd3_cfg","yd3_metas","yd3_log","yd3_done","yd3_pet","yd3_night"].forEach(k=>localStorage.removeItem(k));
+  location.reload();
+}
+
+function applyAccent(){document.documentElement.style.setProperty("--a",cfg.accent);}
+
+// ── WIZARD ────────────────────────────────────────────────────────────────────
+function drawProg(){
+  const el=document.getElementById("wProg");if(!el)return;
+  el.innerHTML=STEPS.map((_,i)=>`<div class="w-dot ${i<step?"done":i===step?"active":""}"></div>`).join("");
+  const lbl=document.getElementById("wStepLbl");
+  if(lbl)lbl.textContent=step===0?"Inicio":`Paso ${step} de ${STEPS.length-1}`;
+}
+
+function isAreaActive(k){
+  return !W.activeAreas||W.activeAreas[k]!==false;
+}
+
+function drawStep(){
+  const box=document.getElementById("wBox");if(!box)return;
+  const s=STEPS[step];
+  if(s.id==="welcome")box.innerHTML=stepWelcome();
+  else if(s.id==="identity")box.innerHTML=stepIdentity();
+  else if(s.id==="personal")box.innerHTML=stepMeta("personal","🧠","Personal","Salud, aprendizaje, hobbies, bienestar",4,4,2);
+  else if(s.id==="profesional")box.innerHTML=stepMeta("profesional","💼","Profesional","Ingresos, carrera, emprendimiento",4,4,2);
+  else if(s.id==="relaciones")box.innerHTML=stepRelaciones();
+  else if(s.id==="espiritual")box.innerHTML=stepMeta("espiritual","🧘","Espiritual","Meditación, conexión, práctica espiritual",2,1,1);
+  else if(s.id==="comunitaria")box.innerHTML=stepComunitaria();
+  else if(s.id==="review")box.innerHTML=stepReview();
+  drawProg();
+}
+
+function nxt(){
+  if(step>=STEPS.length-1)return;
+  let next=step+1;
+  // Saltar pasos de áreas desactivadas
+  while(next<STEPS.length-1){
+    const sid=STEPS[next].id;
+    if((sid==="personal"&&!isAreaActive("personal"))||
+       (sid==="profesional"&&!isAreaActive("profesional"))||
+       (sid==="relaciones"&&!isAreaActive("relaciones"))||
+       (sid==="espiritual"&&!isAreaActive("espiritual"))||
+       (sid==="comunitaria"&&!isAreaActive("comunitaria"))){
+      next++;
+    } else break;
+  }
+  step=next;drawStep();
+}
+
+function prv(){
+  if(step<=0)return;
+  let prev=step-1;
+  while(prev>0){
+    const sid=STEPS[prev].id;
+    if((sid==="personal"&&!isAreaActive("personal"))||
+       (sid==="profesional"&&!isAreaActive("profesional"))||
+       (sid==="relaciones"&&!isAreaActive("relaciones"))||
+       (sid==="espiritual"&&!isAreaActive("espiritual"))||
+       (sid==="comunitaria"&&!isAreaActive("comunitaria"))){
+      prev--;
+    } else break;
+  }
+  step=prev;drawStep();
+}
+function chkNeg(val,id){const el=document.getElementById(id);if(el)el.classList.toggle("on",NEG.test(val));}
+
+function stepWelcome(){
+  return `<div class="w-eyebrow">Proyecto de Expansión Personal</div>
+<div class="w-title">Tu proceso de 90 días empieza aquí</div>
+<div class="w-desc">Declara tus metas con claridad y compromiso real antes de entrar al dashboard.</div>
+<div class="gap-box">
+  <div class="gap-box-title">📋 Reglas del Proyecto</div>
+  <div class="gap-rule"><span>✅</span> Todo dentro de <strong>90 días</strong></div>
+  <div class="gap-rule"><span>✅</span> <strong>Específico, claro y medible</strong> — incluye cifras y frecuencias</div>
+  <div class="gap-rule"><span>✅</span> Habla en <strong>positivo</strong> — de neutro a positivo</div>
+  <div class="gap-rule"><span>❌</span> Prohibido: "ni más, ni menos, ni por lo menos"</div>
+  <div class="gap-rule"><span>❌</span> Evita: "no quiero", "dejar de", "nunca"</div>
+  <div class="gap-rule"><span>💡</span> Usa: "voy a lograr", cifras concretas, frecuencias exactas</div>
+</div>
+<div class="btn-row"><button class="btn btn-a" onclick="nxt()">Comenzar →</button></div>`;
+}
+
+function stepIdentity(){
+  const today=new Date().toISOString().split("T")[0];
+  const sd=W.startDate||cfg.startDate||today;
+  const areas=[
+    {k:"personal",e:"🧠",l:"Personal",hint:"Salud, aprendizaje, bienestar"},
+    {k:"profesional",e:"💼",l:"Profesional",hint:"Ingresos, carrera, negocio"},
+    {k:"relaciones",e:"❤️",l:"Relaciones",hint:"Familia, pareja, amigos"},
+    {k:"espiritual",e:"🧘",l:"Espiritual",hint:"Meditación, propósito, fe"},
+    {k:"comunitaria",e:"🌱",l:"Comunitaria",hint:"Impacto social, voluntariado"}
+  ];
+  if(!W.activeAreas) W.activeAreas={personal:true,profesional:true,relaciones:true,espiritual:true,comunitaria:true};
+  if(!W.priorities) W.priorities={personal:3,profesional:3,relaciones:3,espiritual:3,comunitaria:3};
+
+  const areasHTML=areas.map(a=>{
+    const active=W.activeAreas[a.k]!==false;
+    const prio=W.priorities[a.k]||3;
+    return `<div class="area-toggle-card ${active?"active":""}" id="atc_${a.k}" onclick="toggleArea('${a.k}')">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="area-toggle-icon">${a.e}</div>
+    <div style="flex:1;">
+      <div style="font-weight:700;font-size:14px;">${a.l}</div>
+      <div style="font-size:11px;color:var(--m);">${a.hint}</div>
+    </div>
+    <div class="area-toggle-check" id="atcheck_${a.k}">${active?"✓":""}</div>
+  </div>
+  <div class="area-prio-wrap" id="aprio_${a.k}" style="display:${active?"block":"none"};margin-top:12px;">
+    <div style="font-size:11px;color:var(--m);margin-bottom:6px;">Prioridad: <span id="apriolbl_${a.k}">${["","Baja","Media-Baja","Media","Alta","Máxima"][prio]}</span></div>
+    <input type="range" min="1" max="5" value="${prio}" class="prio-slider"
+      oninput="setPriority('${a.k}',+this.value)"
+      onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--m);margin-top:2px;"><span>Baja</span><span>Máxima</span></div>
+  </div>
+</div>`;
+  }).join("");
+
+  return `<div class="w-eyebrow">Tu Identidad</div>
+<div class="w-title">¿Quién eres en este proyecto?</div>
+<span class="lbl" style="margin-top:0;">¿Cuál es tu nombre?</span>
+<input class="inp" id="f_nombre" value="${W.nombre}" placeholder="Nombre completo" oninput="W.nombre=this.value">
+<span class="lbl">Tu contrato: "Yo soy un/una..."</span>
+<input class="inp" id="f_contrato" value="${W.contrato}" placeholder="hombre/mujer poderoso/a, comprometido/a..." oninput="W.contrato=this.value">
+<span class="lbl">Mi compromiso en este proyecto es:</span>
+<textarea class="txta" oninput="W.compromiso=this.value" placeholder="Vivir la experiencia de crear...">${W.compromiso}</textarea>
+<span class="lbl">📅 Fecha de inicio de tus 90 días</span>
+<input type="date" class="inp" id="f_startDate" value="${sd}" oninput="W.startDate=this.value" style="margin-bottom:4px;">
+<div style="font-size:12px;color:var(--m);margin-bottom:16px;">Puedes programar el inicio para el futuro si aún no estás listo/a.</div>
+<span class="lbl">🎯 Áreas de tu proyecto — activa las que trabajarás</span>
+<div style="font-size:12px;color:var(--m);margin-bottom:12px;">Desactiva las áreas que no quieras incluir. El progreso se calculará solo con las áreas activas.</div>
+<div id="areasToggleList" style="display:flex;flex-direction:column;gap:8px;">${areasHTML}</div>
+<div class="btn-row" style="margin-top:24px;"><button class="btn btn-g" onclick="prv()">← Atrás</button><button class="btn btn-a" onclick="valIdentity()">Continuar →</button></div>`;
+}
+
+function toggleArea(k){
+  if(!W.activeAreas)W.activeAreas={personal:true,profesional:true,relaciones:true,espiritual:true,comunitaria:true};
+  const cur=W.activeAreas[k]!==false;
+  W.activeAreas[k]=!cur;
+  const card=document.getElementById("atc_"+k);
+  const check=document.getElementById("atcheck_"+k);
+  const prio=document.getElementById("aprio_"+k);
+  if(card)card.classList.toggle("active",!cur);
+  if(check)check.textContent=!cur?"✓":"";
+  if(prio)prio.style.display=!cur?"block":"none";
+}
+
+function setPriority(k,val){
+  if(!W.priorities)W.priorities={personal:3,profesional:3,relaciones:3,espiritual:3,comunitaria:3};
+  W.priorities[k]=val;
+  const lbl=document.getElementById("apriolbl_"+k);
+  if(lbl)lbl.textContent=["","Baja","Media-Baja","Media","Alta","Máxima"][val];
+}
+
+function valIdentity(){
+  if(!W.nombre.trim()){toast("Escribe tu nombre");return;}
+  if(!W.startDate)W.startDate=new Date().toISOString().split("T")[0];
+  cfg.startDate=W.startDate;
+  // Al menos 1 área activa
+  const active=Object.entries(W.activeAreas||{}).filter(([,v])=>v!==false);
+  if(!active.length){toast("Activa al menos un área");return;}
+  nxt();
+}
+
+function stepMeta(area,emoji,label,hint,dc,wc,mc){
+  const d=W[area];
+  while(d.daily.length<dc)d.daily.push("");
+  while(d.weekly.length<wc)d.weekly.push("");
+  while(d.monthly.length<mc)d.monthly.push("");
+  const mk=(arr,freq,ph)=>arr.slice(0,freq===dc?dc:freq===wc?wc:mc).map((v,i)=>`<div class="act-wrap"><div class="act-n">${i+1}</div><input class="inp" value="${v}" placeholder="${ph}" oninput="W['${area}'].${freq==='daily'?'daily':freq==='weekly'?'weekly':'monthly'}[${i}]=this.value"></div>`).join("");
+  return `<div class="w-eyebrow">${emoji} Meta ${label}</div>
+<div class="w-title">¿Qué vas a crear en tu área ${label.toLowerCase()}?</div>
+<div class="w-desc">${hint}. Cifras concretas y frecuencias específicas.</div>
+<span class="lbl" style="margin-top:0;">Declara tu meta</span>
+<textarea class="txta" oninput="W['${area}'].meta=this.value;chkNeg(this.value,'nw_${area}')" placeholder="Ej: Pesar 75kg (actual 85kg), tonificar, condición física">${d.meta}</textarea>
+<div class="neg-w" id="nw_${area}">⚠️ Redacta en positivo: usa "voy a lograr Y" en lugar de "no quiero X"</div>
+<div class="pg2">
+  <div><span class="lbl" style="margin-top:0;">Miedo a atravesar</span><input class="inp" value="${d.miedo}" placeholder="Ej: Mi propia apatía" oninput="W['${area}'].miedo=this.value"></div>
+  <div><span class="lbl" style="margin-top:0;">Lo que va a requerir</span><input class="inp" value="${d.requiere}" placeholder="Ej: Compromiso, valentía" oninput="W['${area}'].requiere=this.value"></div>
+</div>
+<span class="lbl">Inspiración para mi entorno</span>
+<input class="inp" value="${d.inspiracion}" placeholder="Ej: Sosteniendo mi palabra" oninput="W['${area}'].inspiracion=this.value">
+<div class="freq-box"><div class="freq-lbl">📅 Acciones Diarias</div><div class="act-grid">${mk(d.daily,'daily',"Acción diaria...")}</div></div>
+<div class="freq-box"><div class="freq-lbl">📆 Acciones Semanales</div><div class="act-grid">${mk(d.weekly,'weekly',"Acción semanal...")}</div></div>
+<div class="freq-box"><div class="freq-lbl">🗓️ Acciones Mensuales</div><div class="act-grid">${mk(d.monthly,'monthly',"Acción mensual...")}</div></div>
+<div class="btn-row"><button class="btn btn-g" onclick="prv()">← Atrás</button><button class="btn btn-a" onclick="valMeta('${area}')">Continuar →</button></div>`;
+}
+
+function valMeta(a){if(!W[a].meta.trim()){toast("Declara tu meta primero");return;}nxt();}
+
+function pForm(p,i){
+  return `<div class="persona-card" id="pc_${i}">
+${i>0?`<button class="persona-del" onclick="delP(${i})">×</button>`:""}
+<div class="p-num">Persona ${i+1}</div>
+<input class="inp" value="${p.nombre}" placeholder="Nombre (ej: Hermano Luis)" oninput="W.relaciones[${i}].nombre=this.value" style="margin-bottom:8px;">
+<input class="inp" value="${p.relacion}" placeholder='Relación: "Una relación de amor y..."' oninput="W.relaciones[${i}].relacion=this.value" style="margin-bottom:8px;">
+<div class="pg2">
+  <input class="inp" value="${p.daily[0]||""}" placeholder="Acción Diaria" oninput="W.relaciones[${i}].daily[0]=this.value">
+  <input class="inp" value="${p.weekly[0]||""}" placeholder="Acción Semanal" oninput="W.relaciones[${i}].weekly[0]=this.value">
+</div>
+<div style="display:flex;gap:8px;margin-top:8px;">
+  <input class="inp" value="${p.monthly[0]||""}" placeholder="Acción Mensual" oninput="W.relaciones[${i}].monthly[0]=this.value">
+  <input class="inp" value="${p.miedo||""}" placeholder="Miedo a atravesar" oninput="W.relaciones[${i}].miedo=this.value">
+</div>
+</div>`;
+}
+
+function stepRelaciones(){
+  if(!W.relaciones.length)W.relaciones=[{nombre:"",relacion:"",miedo:"",daily:[""],weekly:[""],monthly:[""]}];
+  return `<div class="w-eyebrow">❤️ Meta Relaciones</div>
+<div class="w-title">Las relaciones más importantes</div>
+<div class="w-desc">Pareja (+1 año), padres, hermanos, hijos. Acciones que les gustan a ellos.</div>
+<div id="pCon">${W.relaciones.map((p,i)=>pForm(p,i)).join("")}</div>
+<button class="btn btn-g" style="margin-top:10px;font-size:13px;padding:8px 16px;" onclick="addP()">+ Agregar persona</button>
+<div class="btn-row"><button class="btn btn-g" onclick="prv()">← Atrás</button><button class="btn btn-a" onclick="valRel()">Continuar →</button></div>`;
+}
+
+function addP(){
+  if(W.relaciones.length>=6){toast("Máximo 6 personas");return;}
+  W.relaciones.push({nombre:"",relacion:"",miedo:"",daily:[""],weekly:[""],monthly:[""]});
+  document.getElementById("pCon").innerHTML=W.relaciones.map((p,i)=>pForm(p,i)).join("");
+}
+function delP(i){W.relaciones.splice(i,1);document.getElementById("pCon").innerHTML=W.relaciones.map((p,i)=>pForm(p,i)).join("");}
+function valRel(){if(!W.relaciones[0].nombre.trim()){toast("Agrega al menos una persona");return;}nxt();}
+
+function stepComunitaria(){
+  return `<div class="w-eyebrow">🌱 Meta Comunitaria</div>
+<div class="w-title">Tu impacto en el mundo</div>
+<div class="w-desc">Una persona fuera de tu círculo y una institución en equipo.</div>
+<div class="freq-box" style="margin-bottom:12px;">
+  <div class="freq-lbl">Meta Comunitaria Personal</div>
+  <input class="inp" value="${W.comunitaria.meta}" placeholder='Voy a crear una relación de... con...' oninput="W.comunitaria.meta=this.value" style="margin-bottom:8px;">
+  ${W.comunitaria.acciones.map((v,i)=>`<input class="inp" value="${v}" placeholder="Acción ${String.fromCharCode(65+i)}" oninput="W.comunitaria.acciones[${i}]=this.value" style="margin-bottom:8px;">`).join("")}
+</div>
+<div class="freq-box">
+  <div class="freq-lbl">Meta Comunitaria de Equipo</div>
+  <input class="inp" value="${W.equipo.inst}" placeholder="Institución a apoyar como equipo" oninput="W.equipo.inst=this.value">
+</div>
+<div class="btn-row"><button class="btn btn-g" onclick="prv()">← Atrás</button><button class="btn btn-a" onclick="nxt()">Continuar →</button></div>`;
+}
+
+function buildAreaPills(){
+  const pLabels=["","Baja","Med-B","Media","Alta","Máx"];
+  return Object.entries(W.activeAreas||{})
+    .filter(([,v])=>v!==false)
+    .map(([k])=>{
+      const prio=(W.priorities&&W.priorities[k])||3;
+      const mt=MT[k]||{e:"🎯",l:k};
+      return '<span class="tag" style="font-size:10px;">'+mt.e+' '+mt.l+' · '+pLabels[prio]+'</span>';
+    }).join("");
+}
+
+function stepReview(){
+  const areas=[{k:"personal",e:"🧠",l:"Personal"},{k:"profesional",e:"💼",l:"Profesional"},{k:"espiritual",e:"🧘",l:"Espiritual"}];
+  const aH=areas.map(a=>{
+    const d=W[a.k];if(!d.meta)return"";
+    const acts=[...d.daily.filter(Boolean).map(t=>`<span class="tag">${t}</span>`),...d.weekly.filter(Boolean).map(t=>`<span class="tag w">${t}</span>`),...d.monthly.filter(Boolean).map(t=>`<span class="tag m">${t}</span>`)].join("");
+    return `<div class="rev-area"><div class="rev-name">${a.e} ${a.l}</div><div class="rev-meta">${d.meta}</div><div class="tags">${acts}</div></div>`;
+  }).join("");
+  const rH=W.relaciones.filter(p=>p.nombre).map(p=>{
+    const acts=[...(p.daily||[]).filter(Boolean).map(t=>`<span class="tag">${t}</span>`),...(p.weekly||[]).filter(Boolean).map(t=>`<span class="tag w">${t}</span>`),...(p.monthly||[]).filter(Boolean).map(t=>`<span class="tag m">${t}</span>`)].join("");
+    return `<div class="rev-area"><div class="rev-name">❤️ ${p.nombre}</div><div class="rev-meta">${p.relacion||""}</div><div class="tags">${acts}</div></div>`;
+  }).join("");
+  return `<div class="w-eyebrow">Revisión Final</div>
+<div class="w-title">Tu Proyecto de Expansión</div>
+<div class="w-desc">Revisa que todo esté correcto. Puedes volver para editar.</div>
+<div class="rev-area">
+  <div class="rev-name">👤 ${W.nombre||"—"}</div>
+  <div class="rev-meta">"${W.contrato||"—"}"</div>
+  ${W.compromiso?`<div style="font-size:13px;color:var(--m);margin-top:4px;">Compromiso: "${W.compromiso}"</div>`:""}
+  <div style="font-size:12px;color:var(--m);margin-top:6px;">📅 Inicio: ${W.startDate||cfg.startDate||"Hoy"}</div>
+  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">
+    ${buildAreaPills()}
+  </div>
+</div>
+${aH}${rH}
+<div class="btn-row"><button class="btn btn-g" onclick="prv()">← Editar</button><button class="btn btn-a" onclick="finish()">🚀 Comenzar mis 90 días</button></div>`;
+}
+
+function finish(){
+  cfg.user=W.nombre||cfg.user;
+  if(W.startDate)cfg.startDate=W.startDate;
+  if(!petCfg.name||petCfg.name.includes("Lumen"))
+    petCfg.name=W.nombre?W.nombre.split(" ")[0]+"'s Lumen":"Lumen";
+  // Guardar prioridades en cfg para usarlas en predicción
+  cfg.priorities=W.priorities||{personal:3,profesional:3,relaciones:3,espiritual:3,comunitaria:3};
+  metas=[];
+  const mkA=(arr,freq)=>arr.filter(t=>t&&t.trim()).map(t=>({id:Date.now()+Math.random(),text:t.trim(),freq,done:false,doneDate:null}));
+  const addM=(type,d)=>{
+    if(!isAreaActive(type))return; // saltar área desactivada
+    const acts=[...mkA(d.daily||[],"daily"),...mkA(d.weekly||[],"weekly"),...mkA(d.monthly||[],"monthly")];
+    const prio=cfg.priorities[type]||3;
+    if(acts.length||d.meta)metas.push({id:Date.now()+Math.random(),type,desc:d.meta||"",miedo:d.miedo||"",requiere:d.requiere||"",emoji:MT[type]?MT[type].e:"🎯",label:MT[type]?MT[type].l:type,actions:acts,priority:prio,created:new Date().toISOString()});
+  };
+  addM("personal",W.personal);addM("profesional",W.profesional);
+  if(isAreaActive("relaciones")){
+    W.relaciones.forEach(p=>{if(p.nombre){const acts=[...mkA(p.daily,"daily"),...mkA(p.weekly,"weekly"),...mkA(p.monthly,"monthly")];metas.push({id:Date.now()+Math.random(),type:"relaciones",desc:p.relacion||p.nombre,emoji:"❤️",label:p.nombre,miedo:p.miedo||"",actions:acts,priority:cfg.priorities.relaciones||3,created:new Date().toISOString()});}});
+  }
+  addM("espiritual",W.espiritual);
+  if(isAreaActive("comunitaria")&&W.comunitaria.meta){const acts=mkA(W.comunitaria.acciones,"daily");metas.push({id:Date.now()+Math.random(),type:"comunitaria",desc:W.comunitaria.meta,emoji:"🌱",label:"Comunitaria",miedo:"",actions:acts,priority:cfg.priorities.comunitaria||3,created:new Date().toISOString()});}
+  localStorage.setItem("yd3_done","1");save();launch();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+let dashRafId=null;
+
+function launch(){
+  document.getElementById("W").style.display="none";
+  document.getElementById("D").style.display="block";
+  applyAccent();updateDB();drawDBar();drawSummary();
+  startDashPet();
+  setTimeout(()=>petBubbleSay(calcPetState()),2000);
+}
+
+function updateDB(){
+  const g=id=>document.getElementById(id);
+  const t=g("dbTitle");if(t)t.textContent=cfg.appName;
+  const p=g("petLbl");if(p)p.textContent=petCfg.name;
+  const l=g("sbLogo");if(l)l.textContent=cfg.appName[0].toUpperCase();
+  const start=new Date(cfg.startDate);
+  const day=Math.max(0,Math.floor((new Date()-start)/86400000));
+  const dl=g("dayLbl");if(dl)dl.textContent=`Día ${Math.min(day,90)}/90`;
+  const sdl=g("startDateLbl");if(sdl)sdl.textContent=start.toLocaleDateString("es-MX",{month:"short",day:"numeric",year:"numeric"});
+  const sl=g("startLbl");if(sl)sl.textContent=`Inicio: ${start.toLocaleDateString("es-MX",{month:"short",day:"numeric",year:"numeric"})}`;
+  updateKPIs();
+}
+
+function updateKPIs(){
+  const total=metas.reduce((s,m)=>s+m.actions.length,0);
+  const done=metas.reduce((s,m)=>s+m.actions.filter(a=>a.done).length,0);
+  const pct=total>0?Math.round((done/total)*100):0;
+  const g=id=>document.getElementById(id);
+  const kp=g("kPct");if(kp)kp.textContent=pct+"%";
+  const kb=g("kBar");if(kb)kb.style.width=pct+"%";
+  const today=new Date().toDateString();
+  const tL=log.filter(l=>new Date(l.ts).toDateString()===today);
+  const td=new Set(tL.filter(l=>l.done).map(l=>l.aId)).size;
+  const tt=metas.reduce((s,m)=>s+m.actions.filter(a=>a.freq==="daily").length,0);
+  const kt=g("kToday");if(kt)kt.textContent=td;
+  const ks=g("kTodaySub");if(ks)ks.textContent=`de ${tt} acciones`;
+}
+
+function drawDBar(){
+  const bar=document.getElementById("dBar");if(!bar)return;
+  const start=new Date(cfg.startDate),today=new Date();
+  bar.innerHTML=Array.from({length:90},(_,i)=>{
+    const d=new Date(start);d.setDate(d.getDate()+i);
+    const iT=d.toDateString()===today.toDateString();
+    const iP=d<today&&!iT;
+    const hD=log.some(l=>new Date(l.ts).toDateString()===d.toDateString()&&l.done);
+    return `<div class="dd ${iT?"today":iP&&hD?"done":""}" title="Día ${i+1}"></div>`;
+  }).join("");
+}
+
+function drawSummary(){
+  const el=document.getElementById("dSummary");if(!el)return;
+  if(!metas.length){el.innerHTML=`<div style="color:var(--m);text-align:center;padding:24px;font-size:14px;">Completa el cuestionario para ver tus metas.</div>`;return;}
+  el.innerHTML=metas.map(m=>{
+    const d=m.actions.filter(a=>a.done).length,tot=m.actions.length;
+    const p=tot>0?Math.round((d/tot)*100):0;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;">
+<div style="font-size:20px;">${m.emoji}</div>
+<div style="flex:1;"><div style="font-weight:600;font-size:14px;">${m.label||m.desc}</div><div class="pbar" style="margin-top:6px;"><div class="pfill" style="width:${p}%"></div></div></div>
+<div style="font-family:Syne,sans-serif;font-weight:900;font-size:18px;color:var(--a);">${p}%</div></div>`;
+  }).join("");
+}
+
+// ── SECCIONES ─────────────────────────────────────────────────────────────────
+function goSec(name){
+  ["dash","pet","metas","hist","pred"].forEach(s=>{
+    const el=document.getElementById("sec-"+s);if(el)el.style.display=s===name?"block":"none";
+    const b=document.getElementById("nb-"+s);if(b)b.classList.toggle("on",s===name);
+  });
+  if(name==="metas")drawMetas();
+  if(name==="hist")drawHist();
+  if(name==="pred")drawPred();
+  if(name==="pet"){drawPetPage();startPagePet();}
+  if(name!=="pet")stopPagePet();
+}
+
+// ── METAS ─────────────────────────────────────────────────────────────────────
+function setF(f,el){
+  curF=f;
+  document.querySelectorAll(".ft").forEach(b=>b.classList.remove("on"));
+  el.classList.add("on");drawMetas();
+}
+
+function drawMetas(){
+  const c=document.getElementById("mCon");if(!c)return;
+  if(!metas.length){c.innerHTML=`<div class="card" style="text-align:center;color:var(--m);padding:40px;">Sin metas aún.</div>`;return;}
+  c.innerHTML=metas.map(m=>{
+    const acts=m.actions.filter(a=>a.freq===curF);
+    const d=m.actions.filter(a=>a.done).length,tot=m.actions.length;
+    const p=tot>0?Math.round((d/tot)*100):0;
+    const actsH=acts.map(a=>`<div class="arow ${a.done?"dn":""}" onclick="togA('${m.id}','${a.id}')"><div class="ach">${a.done?"✓":""}</div><div class="at">${a.text}</div></div>`).join("");
+    const noActs=acts.length===0?`<div style="color:var(--m);font-size:13px;padding:8px 0;">Sin acciones ${curF==="daily"?"diarias":curF==="weekly"?"semanales":"mensuales"}.</div>`:"";
+    return `<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+<div><div class="mpill">${m.emoji} ${m.label}</div><div style="font-family:Syne,sans-serif;font-weight:800;font-size:18px;margin-top:8px;line-height:1.3;">${m.desc}</div>${m.miedo?`<div style="font-size:12px;color:var(--m);margin-top:6px;">🔥 ${m.miedo}</div>`:""}</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:12px;">
+  <div style="font-family:Syne,sans-serif;font-size:26px;font-weight:900;color:var(--a);">${p}%</div>
+  <button class="meta-edit-btn" onclick="openEditMeta('${m.id}')">✏️ Editar</button>
+</div>
+</div>
+<div class="pbar" style="margin-bottom:14px;"><div class="pfill" style="width:${p}%"></div></div>
+${noActs}${actsH}</div>`;
+  }).join("");
+}
+
+function togA(mId,aId){
+  const m=metas.find(x=>String(x.id)===String(mId));if(!m)return;
+  const a=m.actions.find(x=>String(x.id)===String(aId));if(!a)return;
+  a.done=!a.done;a.doneDate=a.done?new Date().toISOString():null;
+  log.push({ts:new Date().toISOString(),mId,aId,done:a.done});
+  save();drawMetas();updateKPIs();drawDBar();drawSummary();
+  if(a.done)playSound();
+}
+
+// ── EDITAR META ───────────────────────────────────────────────────────────────
+function openEditMeta(mId){
+  const m=metas.find(x=>String(x.id)===String(mId));if(!m)return;
+  editingMetaId=mId;
+  const freqs=["daily","weekly","monthly"];
+  const freqNames={daily:"Diarias",weekly:"Semanales",monthly:"Mensuales"};
+  let html=`
+<span class="lbl" style="margin-top:0;">Meta principal</span>
+<textarea class="txta" id="em_desc" style="min-height:60px;">${m.desc}</textarea>
+<span class="lbl">Miedo a atravesar</span>
+<input class="inp" id="em_miedo" value="${m.miedo||""}">
+<span class="lbl">Lo que requiere</span>
+<input class="inp" id="em_requiere" value="${m.requiere||""}">`;
+  freqs.forEach(freq=>{
+    const acts=m.actions.filter(a=>a.freq===freq);
+    html+=`<div class="freq-box" style="margin-top:14px;"><div class="freq-lbl">Acciones ${freqNames[freq]}</div>`;
+    acts.forEach((a,i)=>{
+      html+=`<div class="act-wrap" style="margin-bottom:6px;"><div class="act-n">${i+1}</div><input class="inp" value="${a.text}" data-aid="${a.id}" data-freq="${freq}"></div>`;
+    });
+    // Botón para agregar acción
+    html+=`<button class="btn btn-g" style="font-size:12px;padding:6px 14px;margin-top:6px;" onclick="addActionToMeta('${mId}','${freq}')">+ Acción</button>`;
+    html+="</div>";
+  });
+  document.getElementById("editModalBody").innerHTML=html;
+  document.getElementById("mEdit").classList.add("open");
+}
+
+function addActionToMeta(mId,freq){
+  const m=metas.find(x=>String(x.id)===String(mId));if(!m)return;
+  m.actions.push({id:Date.now()+Math.random(),text:"",freq,done:false,doneDate:null});
+  save();openEditMeta(mId);
+}
+
+function saveEditMeta(){
+  const m=metas.find(x=>String(x.id)===String(editingMetaId));if(!m)return;
+  const desc=document.getElementById("em_desc");if(desc)m.desc=desc.value.trim();
+  const miedo=document.getElementById("em_miedo");if(miedo)m.miedo=miedo.value.trim();
+  const req=document.getElementById("em_requiere");if(req)m.requiere=req.value.trim();
+  // Actualizar textos de acciones
+  document.querySelectorAll("#editModalBody input[data-aid]").forEach(inp=>{
+    const a=m.actions.find(x=>String(x.id)===String(inp.dataset.aid));
+    if(a)a.text=inp.value.trim();
+  });
+  // Eliminar acciones vacías
+  m.actions=m.actions.filter(a=>a.text);
+  save();closeM();drawMetas();drawSummary();toast("Meta actualizada ✨");
+}
+
+// ── HISTÓRICO ─────────────────────────────────────────────────────────────────
+function drawHist(){
+  const tl=document.getElementById("tlList");if(!tl)return;
+  const sorted=[...log].reverse();
+  if(!sorted.length){tl.innerHTML=`<div style="color:var(--m);text-align:center;padding:20px;">Sin actividad aún.</div>`;return;}
+  tl.innerHTML=sorted.slice(0,40).map(l=>{
+    const m=metas.find(x=>String(x.id)===String(l.mId));
+    const a=m&&m.actions.find(x=>String(x.id)===String(l.aId));
+    return `<div class="tl-i"><div class="tl-d">${new Date(l.ts).toLocaleDateString("es-MX",{month:"short",day:"numeric"})}</div><div style="font-size:16px;">${l.done?"✅":"⏸"}</div><div style="flex:1;"><div style="font-weight:500;">${a&&a.text||"Acción"}</div><div style="font-size:11px;color:var(--m);">${m&&m.label||""}</div></div></div>`;
+  }).join("");
+  const ctx=document.getElementById("hChart");if(!ctx)return;
+  if(chartI){chartI.destroy();chartI=null;}
+  const labels=[],data=[];
+  for(let i=0;i<90;i++){
+    const d=new Date(cfg.startDate);d.setDate(d.getDate()+i);
+    if(d>new Date())break;
+    labels.push(d.toLocaleDateString("es-MX",{month:"short",day:"numeric"}));
+    data.push(log.filter(l=>new Date(l.ts).toDateString()===d.toDateString()&&l.done).length);
+  }
+  chartI=new Chart(ctx,{type:"bar",data:{labels,datasets:[{label:"Acciones",data,backgroundColor:cfg.accent+"66",borderColor:cfg.accent,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:"#6b6980"},grid:{color:"rgba(255,255,255,.04)"}},x:{ticks:{color:"#6b6980",maxTicksLimit:8},grid:{display:false}}}}});
+}
+
+// ── PREDICCIÓN ────────────────────────────────────────────────────────────────
+function drawPred(){
+  const start=new Date(cfg.startDate);
+  const days=Math.max(1,Math.floor((new Date()-start)/86400000));
+  const total=metas.reduce((s,m)=>s+m.actions.length,0);
+  const done=metas.reduce((s,m)=>s+m.actions.filter(a=>a.done).length,0);
+  const pred=total>0?Math.min(100,Math.round((done/days*90)/total*100)):0;
+  const pn=document.getElementById("predN");if(pn)pn.textContent=total>0?pred+"%":"—";
+  const pl=document.getElementById("predLbl");
+  if(pl)pl.textContent=total===0?"Completa el cuestionario":pred>=80?"¡Vas camino al éxito total! 🚀":pred>=60?"Buen ritmo, mantén la constancia 💪":pred>=40?"Sube tu ritmo diario para mejorar 📈":"Necesitas más acciones consistentes ⚡";
+  const bm=document.getElementById("predBM");if(!bm)return;
+  bm.innerHTML=metas.map(m=>{
+    const d=m.actions.filter(a=>a.done).length,tot=m.actions.length;
+    const pr=tot>0?Math.min(100,Math.round((d/days*90)/tot*100)):0;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--s2);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;">
+<div style="font-size:20px;">${m.emoji}</div>
+<div style="flex:1;"><div style="font-weight:600;">${m.label||m.desc}</div><div class="pbar" style="margin-top:6px;"><div class="pfill" style="width:${pr}%"></div></div><div style="font-size:11px;color:var(--m);margin-top:4px;">${d}/${tot} completadas</div></div>
+<div style="font-family:Syne,sans-serif;font-weight:900;font-size:22px;color:var(--a);">${pr}%</div></div>`;
+  }).join("");
+}
+
+// ── PET LOGIC ─────────────────────────────────────────────────────────────────
+function calcStreak(){
+  let streak=0;
+  const today=new Date();
+  for(let i=0;i<90;i++){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const had=log.some(l=>new Date(l.ts).toDateString()===d.toDateString()&&l.done);
+    if(had)streak++;else if(i>0)break;
+  }
+  return streak;
+}
+
+function calcTrend(){
+  const today=new Date();let recent=0,older=0;
+  for(let i=0;i<3;i++){const d=new Date(today);d.setDate(d.getDate()-i);recent+=log.filter(l=>new Date(l.ts).toDateString()===d.toDateString()&&l.done).length;}
+  for(let i=3;i<6;i++){const d=new Date(today);d.setDate(d.getDate()-i);older+=log.filter(l=>new Date(l.ts).toDateString()===d.toDateString()&&l.done).length;}
+  return recent-older;
+}
+
+function calcPetState(){
+  const streak=calcStreak();
+  const total=metas.reduce((s,m)=>s+m.actions.length,0);
+  const done=metas.reduce((s,m)=>s+m.actions.filter(a=>a.done).length,0);
+  const pct=total>0?Math.round((done/total)*100):0;
+  const trend=calcTrend();
+  const refs=petCfg.reflections.length;
+  let score=0;
+  if(streak>=7)score+=3;else if(streak>=3)score+=2;else if(streak>=1)score+=1;
+  if(pct>=60)score+=2;else if(pct>=30)score+=1;
+  if(trend>0)score+=1;
+  if(refs>=3)score+=1;
+  if(score>=6)return"thriving";
+  if(score>=4)return"happy";
+  if(score>=2)return"neutral";
+  if(score>=1)return"worried";
+  return"sad";
+}
+
+function petBubbleSay(state){
+  const b=document.getElementById("bub");if(!b)return;
+  const lines=DIALOGS[state]||DIALOGS.happy;
+  b.textContent=lines[Math.floor(Math.random()*lines.length)];
+  b.style.display="block";
+  clearTimeout(b._t);b._t=setTimeout(()=>b.style.display="none",2400);
+}
+
+function petAction(type){
+  const btn=document.getElementById("pa-"+type);if(!btn||petCooldowns[type])return;
+  const lines=ACT_DIALOGS[type]||["¡Gracias!"];
+  showBigSpeech(lines[Math.floor(Math.random()*lines.length)]);
+  petCfg.xp=(petCfg.xp||0)+5;
+  btn.classList.add("cd");petCooldowns[type]=true;
+  setTimeout(()=>{btn.classList.remove("cd");delete petCooldowns[type];},8000);
+  save();playSound();updatePetStats();
+}
+
+function addReflection(){
+  const inp=document.getElementById("reflectInput");if(!inp)return;
+  const txt=inp.value.trim();if(!txt){toast("Escribe algo primero");return;}
+  if(!petCfg.reflections)petCfg.reflections=[];
+  petCfg.reflections.unshift({text:txt,ts:new Date().toISOString()});
+  if(petCfg.reflections.length>50)petCfg.reflections.pop();
+  petCfg.xp=(petCfg.xp||0)+8;
+  inp.value="";save();drawReflections();updatePetStats();
+  toast("Reflexión guardada 💜");playSound();
+}
+
+function drawReflections(){
+  const c=document.getElementById("reflectLog");if(!c)return;
+  if(!petCfg.reflections||!petCfg.reflections.length){c.innerHTML=`<div style="color:var(--m);font-size:13px;text-align:center;padding:12px;">Escribe tu primera reflexión ↓</div>`;return;}
+  c.innerHTML=petCfg.reflections.slice(0,10).map(r=>`
+<div class="reflect-item">
+  <div class="reflect-text">${r.text}</div>
+  <div class="reflect-meta">${new Date(r.ts).toLocaleDateString("es-MX",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
+</div>`).join("");
+}
+
+function updatePetStats(){
+  const streak=calcStreak();
+  const total=metas.reduce((s,m)=>s+m.actions.length,0);
+  const done=metas.reduce((s,m)=>s+m.actions.filter(a=>a.done).length,0);
+  const pct=total>0?Math.round((done/total)*100):0;
+  const trend=calcTrend();
+  const refs=(petCfg.reflections||[]).length;
+  const xp=(petCfg.xp||0)+done*5+streak*10+refs*8;
+  const lvl=Math.min(5,Math.floor(xp/100)+1);
+  const xpPct=xp%100;
+
+  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  const b=(id,v)=>{const e=document.getElementById(id);if(e)e.style.width=Math.min(100,Math.max(0,v))+"%";};
+  s("ps-racha",streak);b("pb-racha",Math.min(100,streak/30*100));
+  s("ps-prog",pct+"%");b("pb-prog",pct);
+  s("ps-tend",trend>2?"↑↑":trend>0?"↑":trend<-2?"↓↓":trend<0?"↓":"→");b("pb-tend",50+trend*8);
+  s("ps-ref",refs);b("pb-ref",Math.min(100,refs/20*100));
+  s("petLvlTitle",`Nivel ${lvl} · ${petCfg.name}`);
+  s("petXpVal",`${xp} XP`);b("petXpFill",xpPct);
+  const pt=document.getElementById("petPageTitle");if(pt)pt.textContent=petCfg.name;
+  const ps=document.getElementById("petPageSub");if(ps)ps.textContent=streak>0?`🔥 Racha de ${streak} días · Nivel ${lvl}`:`Tu compañero de 90 días`;
+  // Badge
+  const state=calcPetState();
+  const badge=document.getElementById("petStateBadge");
+  if(badge){const st=PET_STATES[state];badge.textContent=st.label;badge.style.background=`color-mix(in srgb,${st.col} 18%,transparent)`;badge.style.color=st.col;badge.style.border=`1px solid color-mix(in srgb,${st.col} 30%,transparent)`;}
+}
+
+function showBigSpeech(msg){
+  const b=document.getElementById("petSpeechBig");if(!b)return;
+  b.textContent=msg;b.style.display="block";
+  clearTimeout(b._t);b._t=setTimeout(()=>b.style.display="none",2600);
+}
+
+// ── PET CANVAS RENDERER ───────────────────────────────────────────────────────
+// Usa Canvas 2D — sin problemas de IDs duplicados de SVG en DOM
+let dashRaf=null,pageRaf=null;
+let dashPhase=0,pagePhase=0;
+let blinkTimer=0,blinkOpen=true;
+
+function drawPetOnCanvas(canvas,phase,isPage){
+  if(!canvas)return;
+  const W=canvas.width,H=canvas.height;
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,W,H);
+
+  const state=calcPetState();
+  const st=PET_STATES[state]||PET_STATES.happy;
+  const col=petCfg.color||st.col;
+
+  // Escala según tamaño del canvas
+  const sc=Math.min(W,H)/200;
+  const cx=W/2, cy=H*0.52;
+
+  // Estado → parámetros visuales
+  const stateParams={
+    thriving:{bodyScale:1.05,bounce:8,tailSpeed:1.8,sparkle:true,blushAlpha:.25},
+    happy:{bodyScale:1.0,bounce:5,tailSpeed:1.2,sparkle:false,blushAlpha:.15},
+    neutral:{bodyScale:.97,bounce:3,tailSpeed:.7,sparkle:false,blushAlpha:0},
+    worried:{bodyScale:.93,bounce:2,tailSpeed:.4,sparkle:false,blushAlpha:0},
+    sad:{bodyScale:.88,bounce:1,tailSpeed:.2,sparkle:false,blushAlpha:0}
+  };
+  const sp=stateParams[state]||stateParams.happy;
+
+  const bodyY=cy+Math.sin(phase)*sp.bounce*sc;
+  const bs=sp.bodyScale*sc;
+
+  // Glow
+  const glowR=(state==="thriving"?60:state==="happy"?45:28)*sc;
+  const grd=ctx.createRadialGradient(cx,bodyY,0,cx,bodyY,glowR);
+  grd.addColorStop(0,col+"44");grd.addColorStop(1,col+"00");
+  ctx.fillStyle=grd;ctx.beginPath();ctx.ellipse(cx,bodyY,glowR,glowR*.7,0,0,Math.PI*2);ctx.fill();
+
+  // Sombra suelo
+  ctx.save();ctx.globalAlpha=.12;ctx.fillStyle=col;
+  ctx.beginPath();ctx.ellipse(cx,H*.88,28*bs,5*bs,0,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  // ── COLA ──
+  const tailAngle=Math.sin(phase*sp.tailSpeed)*0.35;
+  ctx.save();ctx.translate(cx+26*bs,bodyY+4*bs);ctx.rotate(tailAngle);
+  ctx.strokeStyle=col;ctx.lineWidth=7*bs;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(18*bs,-10*bs,22*bs,10*bs,10*bs,20*bs);ctx.stroke();
+  ctx.restore();
+
+  // ── CUERPO ──
+  // Forma según petCfg.shape
+  const shapes={
+    round:{rx:28,ry:22},fat:{rx:32,ry:26},slim:{rx:22,ry:20},
+    fluffy:{rx:30,ry:24},tiny:{rx:20,ry:18},big:{rx:34,ry:28}
+  };
+  const sh=shapes[petCfg.shape]||shapes.round;
+  const bodyGrd=ctx.createRadialGradient(cx-8*bs,bodyY-4*bs,2*bs,cx,bodyY,40*bs);
+  bodyGrd.addColorStop(0,"rgba(255,255,255,.85)");
+  bodyGrd.addColorStop(.4,col+"f2");
+  bodyGrd.addColorStop(1,col);
+  ctx.fillStyle=bodyGrd;
+  ctx.beginPath();ctx.ellipse(cx,bodyY+8*bs,sh.rx*bs,sh.ry*bs,0,0,Math.PI*2);ctx.fill();
+
+  // ── CABEZA ──
+  const headY=bodyY-18*bs;
+  const headR=26*bs;
+  const headGrd=ctx.createRadialGradient(cx-8*bs,headY-6*bs,2*bs,cx,headY,headR);
+  headGrd.addColorStop(0,"rgba(255,255,255,.9)");
+  headGrd.addColorStop(.35,col+"f0");
+  headGrd.addColorStop(1,col);
+  ctx.fillStyle=headGrd;
+  ctx.beginPath();ctx.ellipse(cx,headY,headR,headR*1.05,0,0,Math.PI*2);ctx.fill();
+
+  // ── OREJAS ──
+  const earWigL=Math.sin(phase*.9+1)*(state==="thriving"?0.15:0.08);
+  const earWigR=Math.sin(phase*.9)*(state==="thriving"?0.15:0.08);
+  function drawEar(ex,ey,wiggle){
+    ctx.save();ctx.translate(ex,ey);ctx.rotate(wiggle);
+    ctx.fillStyle=col;ctx.beginPath();
+    ctx.moveTo(0,0);ctx.bezierCurveTo(-10*bs,-20*bs,-2*bs,-30*bs,10*bs,-18*bs);ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.35)";ctx.beginPath();
+    ctx.moveTo(1*bs,-2*bs);ctx.bezierCurveTo(-6*bs,-14*bs,-1*bs,-22*bs,7*bs,-13*bs);ctx.closePath();ctx.fill();
+    ctx.restore();
+  }
+  drawEar(cx-18*bs,headY-18*bs,-earWigL);
+  drawEar(cx+18*bs,headY-18*bs,earWigR);
+
+  // ── MEJILLAS ──
+  if(sp.blushAlpha>0){
+    ctx.save();ctx.globalAlpha=sp.blushAlpha;ctx.fillStyle="#ff9999";
+    ctx.beginPath();ctx.ellipse(cx-16*bs,headY+6*bs,8*bs,5*bs,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(cx+16*bs,headY+6*bs,8*bs,5*bs,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
+  // ── OJOS ──
+  const eyeTypes=petCfg.eyes||"round";
+  const eyeLX=cx-11*bs, eyeRX=cx+11*bs, eyeBaseY=headY-2*bs;
+  const eyeH=blinkOpen?1:0.12;
+
+  function drawEye(ex,ey){
+    if(eyeTypes==="heart"){
+      // Corazón
+      ctx.save();ctx.fillStyle="#0b0b14";ctx.translate(ex,ey);ctx.scale(bs*1.2,bs*1.2*eyeH);
+      ctx.beginPath();ctx.moveTo(0,-4);ctx.bezierCurveTo(4,-8,9,-4,0,4);ctx.bezierCurveTo(-9,-4,-4,-8,0,-4);ctx.fill();ctx.restore();
+      if(eyeH>0.3){ctx.fillStyle="white";ctx.beginPath();ctx.ellipse(ex-2*bs,ey-3*bs,2*bs,2*bs,0,0,Math.PI*2);ctx.fill();}
+    } else if(eyeTypes==="star"){
+      if(eyeH<0.3){ctx.fillStyle="#0b0b14";ctx.fillRect(ex-6*bs,ey-1.5*bs,12*bs,3*bs);return;}
+      ctx.fillStyle="#0b0b14";
+      for(let a=0;a<5;a++){const ang=a/5*Math.PI*2-Math.PI/2;
+        const x1=ex+Math.cos(ang)*5*bs,y1=ey+Math.sin(ang)*5*bs*eyeH;
+        const ang2=ang+Math.PI/5;
+        const x2=ex+Math.cos(ang2)*2.5*bs,y2=ey+Math.sin(ang2)*2.5*bs*eyeH;
+        if(a===0)ctx.beginPath();
+        if(a===0){ctx.moveTo(x1,y1);}else{ctx.lineTo(x1,y1);}ctx.lineTo(x2,y2);}
+      ctx.closePath();ctx.fill();
+      ctx.fillStyle="white";ctx.beginPath();ctx.ellipse(ex-2*bs,ey-2*bs,1.5*bs,1.5*bs,0,0,Math.PI*2);ctx.fill();
+    } else if(eyeTypes==="sleepy"){
+      ctx.strokeStyle="#0b0b14";ctx.lineWidth=2.5*bs;ctx.lineCap="round";
+      ctx.beginPath();ctx.arc(ex,ey,5*bs,Math.PI,Math.PI*2,false);ctx.stroke();
+      ctx.fillStyle="rgba(0,0,0,.08)";ctx.beginPath();ctx.arc(ex,ey,5*bs,Math.PI,Math.PI*2,false);ctx.fill();
+    } else if(eyeTypes==="wide"){
+      ctx.fillStyle="#0b0b14";ctx.beginPath();ctx.ellipse(ex,ey,8*bs,10*bs*eyeH,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="white";ctx.beginPath();ctx.ellipse(ex+3*bs,ey-3*bs,3.5*bs,3.5*bs,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="rgba(0,0,0,.3)";ctx.beginPath();ctx.ellipse(ex+1*bs,ey+1*bs,2*bs,2*bs,0,0,Math.PI*2);ctx.fill();
+    } else if(eyeTypes==="wink"){
+      // ojo derecho normal, izquierdo guiño
+      if(ex<cx){
+        ctx.strokeStyle="#0b0b14";ctx.lineWidth=2.5*bs;ctx.lineCap="round";
+        ctx.beginPath();ctx.moveTo(ex-5*bs,ey);ctx.lineTo(ex+5*bs,ey);ctx.stroke();
+      } else {
+        ctx.fillStyle="#0b0b14";ctx.beginPath();ctx.ellipse(ex,ey,6*bs,7*bs*eyeH,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="white";ctx.beginPath();ctx.ellipse(ex-2*bs,ey-2*bs,2*bs,2*bs,0,0,Math.PI*2);ctx.fill();
+      }
+    } else {
+      // round (default)
+      ctx.fillStyle="#0b0b14";ctx.beginPath();ctx.ellipse(ex,ey,6.5*bs,8*bs*eyeH,0,0,Math.PI*2);ctx.fill();
+      if(eyeH>0.3){ctx.fillStyle="white";ctx.beginPath();ctx.ellipse(ex-2*bs,ey-3*bs,2.5*bs,2.5*bs,0,0,Math.PI*2);ctx.fill();}
+    }
+  }
+
+  // Cejas expresivas
+  if(state==="worried"||state==="sad"){
+    ctx.strokeStyle="#0b0b14";ctx.lineWidth=2*bs;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(eyeLX-6*bs,eyeBaseY-10*bs);ctx.lineTo(eyeLX+4*bs,eyeBaseY-7*bs);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(eyeRX+6*bs,eyeBaseY-10*bs);ctx.lineTo(eyeRX-4*bs,eyeBaseY-7*bs);ctx.stroke();
+  } else if(state==="thriving"){
+    ctx.strokeStyle="#0b0b14";ctx.lineWidth=2*bs;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(eyeLX-5*bs,eyeBaseY-9*bs);ctx.quadraticCurveTo(eyeLX,eyeBaseY-13*bs,eyeLX+5*bs,eyeBaseY-9*bs);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(eyeRX-5*bs,eyeBaseY-9*bs);ctx.quadraticCurveTo(eyeRX,eyeBaseY-13*bs,eyeRX+5*bs,eyeBaseY-9*bs);ctx.stroke();
+  }
+
+  drawEye(eyeLX,eyeBaseY);
+  drawEye(eyeRX,eyeBaseY);
+
+  // ── NARIZ ──
+  ctx.fillStyle="rgba(0,0,0,.35)";
+  ctx.beginPath();ctx.ellipse(cx,headY+5*bs,3*bs,2*bs,0,0,Math.PI*2);ctx.fill();
+
+  // ── BOCA ──
+  const mouthCurve=state==="thriving"?12:state==="happy"?8:state==="neutral"?0:state==="worried"?-4:-8;
+  ctx.strokeStyle="#0b0b14";ctx.lineWidth=2.5*bs;ctx.lineCap="round";
+  ctx.beginPath();
+  ctx.moveTo(cx-9*bs,headY+11*bs);
+  ctx.quadraticCurveTo(cx,headY+11*bs+mouthCurve*bs,cx+9*bs,headY+11*bs);
+  ctx.stroke();
+  if(mouthCurve>5){// sonrisa grande
+    ctx.fillStyle="rgba(0,0,0,.2)";ctx.beginPath();
+    ctx.moveTo(cx-9*bs,headY+11*bs);ctx.quadraticCurveTo(cx,headY+11*bs+mouthCurve*bs,cx+9*bs,headY+11*bs);
+    ctx.lineTo(cx+9*bs,headY+13*bs);ctx.quadraticCurveTo(cx,headY+15*bs+mouthCurve*bs*.5,cx-9*bs,headY+13*bs);ctx.closePath();ctx.fill();
+  }
+
+  // ── PATAS ──
+  ctx.fillStyle=col;
+  ctx.beginPath();ctx.ellipse(cx-18*bs,bodyY+18*bs,9*bs,6*bs,-.3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(cx+18*bs,bodyY+18*bs,9*bs,6*bs,.3,0,Math.PI*2);ctx.fill();
+
+  // ── ACCESORIO ──
+  const acc=petCfg.acc||"none";
+  if(acc==="hat"){
+    ctx.fillStyle="#1a1a2e";
+    ctx.fillRect(cx-16*bs,headY-40*bs,32*bs,5*bs);// ala
+    ctx.fillRect(cx-10*bs,headY-65*bs,20*bs,28*bs);// copa
+    ctx.strokeStyle="#818cf8";ctx.lineWidth=1.5*bs;
+    ctx.strokeRect(cx-10*bs,headY-65*bs,20*bs,28*bs);
+  } else if(acc==="crown"){
+    ctx.fillStyle="#fbbf24";
+    ctx.beginPath();ctx.moveTo(cx-16*bs,headY-38*bs);
+    ctx.lineTo(cx-16*bs,headY-58*bs);ctx.lineTo(cx-8*bs,headY-50*bs);
+    ctx.lineTo(cx,headY-62*bs);ctx.lineTo(cx+8*bs,headY-50*bs);
+    ctx.lineTo(cx+16*bs,headY-58*bs);ctx.lineTo(cx+16*bs,headY-38*bs);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#fb923c";
+    [[cx-10*bs,headY-42*bs],[cx,headY-44*bs],[cx+10*bs,headY-42*bs]].forEach(([px,py])=>{ctx.beginPath();ctx.arc(px,py,3*bs,0,Math.PI*2);ctx.fill();});
+  } else if(acc==="bow"){
+    ctx.fillStyle="#f472b6";
+    // lazo izq
+    ctx.beginPath();ctx.ellipse(cx-12*bs,headY-36*bs,10*bs,7*bs,-0.5,0,Math.PI*2);ctx.fill();
+    // lazo der
+    ctx.beginPath();ctx.ellipse(cx+12*bs,headY-36*bs,10*bs,7*bs,0.5,0,Math.PI*2);ctx.fill();
+    // nudo centro
+    ctx.fillStyle="#ec4899";ctx.beginPath();ctx.ellipse(cx,headY-36*bs,4*bs,4*bs,0,0,Math.PI*2);ctx.fill();
+  } else if(acc==="glasses"){
+    ctx.strokeStyle="#94a3b8";ctx.lineWidth=2*bs;
+    ctx.beginPath();ctx.ellipse(eyeLX,eyeBaseY-1*bs,9*bs,7*bs,0,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(eyeRX,eyeBaseY-1*bs,9*bs,7*bs,0,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(eyeLX+9*bs,eyeBaseY-1*bs);ctx.lineTo(eyeRX-9*bs,eyeBaseY-1*bs);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(eyeLX-9*bs,eyeBaseY-1*bs);ctx.lineTo(eyeLX-18*bs,eyeBaseY+4*bs);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(eyeRX+9*bs,eyeBaseY-1*bs);ctx.lineTo(eyeRX+18*bs,eyeBaseY+4*bs);ctx.stroke();
+  } else if(acc==="headband"){
+    ctx.strokeStyle=col;ctx.lineWidth=7*bs;
+    ctx.beginPath();ctx.ellipse(cx,headY-14*bs,24*bs,22*bs,0,Math.PI,Math.PI*2);ctx.stroke();
+    ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(cx,headY-36*bs,6*bs,6*bs,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="white";ctx.globalAlpha=.4;ctx.beginPath();ctx.ellipse(cx,headY-36*bs,6*bs,6*bs,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+  }
+
+  // ── SPARKLES thriving ──
+  if(sp.sparkle){
+    const sparks=[[cx-30*bs,bodyY-35*bs,phase*2],[cx+32*bs,bodyY-28*bs,phase*2+1],[cx-20*bs,bodyY-50*bs,phase*3],[cx+20*bs,bodyY-52*bs,phase*3+2]];
+    sparks.forEach(([sx,sy,ph])=>{
+      const r=(1.5+Math.sin(ph)*1)*bs;
+      ctx.fillStyle=`rgba(255,255,255,${.4+Math.sin(ph)*.3})`;
+      ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();
+    });
+  }
+}
+
+// Blink logic
+function tickBlink(){
+  blinkTimer++;
+  if(blinkTimer>120){blinkOpen=false;if(blinkTimer>125){blinkOpen=true;blinkTimer=0;}}
+}
+
+function startDashPet(){
+  if(dashRaf)return;
+  function loop(){
+    dashPhase+=0.035;tickBlink();
+    const canvas=document.getElementById("dashPetCanvas");
+    if(canvas)drawPetOnCanvas(canvas,dashPhase,false);
+    dashRaf=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function startPagePet(){
+  if(pageRaf)return;
+  function resizePageCanvas(){
+    const canvas=document.getElementById("petPageCanvas");
+    if(!canvas)return;
+    const stage=canvas.parentElement;
+    if(stage){
+      canvas.width=stage.offsetWidth||400;
+      canvas.height=stage.offsetHeight||500;
+    }
+  }
+  resizePageCanvas();
+  function loop(){
+    pagePhase+=0.035;tickBlink();
+    const c=document.getElementById("petPageCanvas");
+    if(c)drawPetOnCanvas(c,pagePhase,true);
+    pageRaf=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function stopPagePet(){
+  if(pageRaf){cancelAnimationFrame(pageRaf);pageRaf=null;}
+}
+
+// ── PET PAGE ─────────────────────────────────────────────────────────────────
+function drawPetPage(){
+  updatePetStats();
+  drawReflections();
+  buildCustomPanel();
+  const ni=document.getElementById("petNameInput");if(ni)ni.value=petCfg.name;
+  // resize canvas
+  const c=document.getElementById("petPageCanvas");
+  if(c){
+    const s=c.parentElement;
+    if(s){c.width=s.offsetWidth||400;c.height=s.offsetHeight||500;}
+  }
+}
+
+function buildCustomPanel(){
+  // Shapes
+  const sg=document.getElementById("shapeGrid");
+  if(sg)sg.innerHTML=PET_SHAPES.map(s=>`<div class="pco ${petCfg.shape===s.id?"sel":""}" onclick="setPetProp('shape','${s.id}',this)" title="${s.id}">${s.lbl}</div>`).join("");
+  // Eyes
+  const eg=document.getElementById("eyesGrid");
+  if(eg)eg.innerHTML=PET_EYES.map(s=>`<div class="pco ${petCfg.eyes===s.id?"sel":""}" onclick="setPetProp('eyes','${s.id}',this)">${s.lbl}</div>`).join("");
+  // Acc
+  const ag=document.getElementById("accGrid");
+  if(ag)ag.innerHTML=PET_ACCS.map(s=>`<div class="pco ${petCfg.acc===s.id?"sel":""}" onclick="setPetProp('acc','${s.id}',this)">${s.lbl}</div>`).join("");
+  // Colors
+  const cg=document.getElementById("colorGrid");
+  if(cg)cg.innerHTML=PET_COLORS.map(c=>`<div class="pco-color ${petCfg.color===c?"sel":""}" style="background:${c}" onclick="setPetColor('${c}',this)"></div>`).join("");
+}
+
+function setPetProp(prop,val,el){
+  petCfg[prop]=val;
+  const grid=el.parentElement;
+  if(grid)grid.querySelectorAll(".pco").forEach(e=>e.classList.remove("sel"));
+  el.classList.add("sel");
+  save();
+}
+
+function setPetColor(col,el){
+  petCfg.color=col;
+  const grid=el.parentElement;
+  if(grid)grid.querySelectorAll(".pco-color").forEach(e=>e.classList.remove("sel"));
+  el.classList.add("sel");
+  save();
+}
+
+function savePetCustom(){
+  const ni=document.getElementById("petNameInput");
+  if(ni&&ni.value.trim())petCfg.name=ni.value.trim();
+  save();updatePetStats();
+  const pl=document.getElementById("petLbl");if(pl)pl.textContent=petCfg.name;
+  toast("Mascota guardada ✨");playSound();
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+function openM(n){
+  closeM();
+  if(n==="cfg"){buildCG();["cfgApp","cfgUser"].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.value=[cfg.appName,cfg.user][i];});document.getElementById("mCfg").classList.add("open");}
+  if(n==="share"){genShare();document.getElementById("mShare").classList.add("open");}
+}
+function closeM(){document.querySelectorAll(".modal-bg").forEach(m=>m.classList.remove("open"));}
+document.addEventListener("click",e=>{if(e.target.classList.contains("modal-bg"))closeM();});
+
+function buildCG(){
+  const g=document.getElementById("cGrid");if(!g)return;
+  g.innerHTML=COLORS.map(c=>`<div class="copt ${c===cfg.accent?"sel":""}" style="background:${c};box-shadow:0 0 8px ${c}55;" onclick="pickC('${c}')"></div>`).join("");
+}
+function pickC(c){cfg.accent=c;applyAccent();buildCG();}
+function saveCfg(){
+  cfg.appName=document.getElementById("cfgApp").value||cfg.appName;
+  cfg.user=document.getElementById("cfgUser").value||cfg.user;
+  save();updateDB();closeM();toast("Guardado ✨");
+}
+
+function genShare(){
+  const total=metas.reduce((s,m)=>s+m.actions.length,0);
+  const done=metas.reduce((s,m)=>s+m.actions.filter(a=>a.done).length,0);
+  const pct=total>0?Math.round((done/total)*100):0;
+  const url=`${location.origin}${location.pathname}?u=${encodeURIComponent(cfg.user)}&p=${pct}`;
+  const el=document.getElementById("sUrl");if(el)el.textContent=url;
+  const ss=document.getElementById("sStats");if(!ss)return;
+  const day=Math.min(90,Math.floor((new Date()-new Date(cfg.startDate))/86400000));
+  ss.innerHTML=[{l:"Metas",v:metas.length},{l:"Progreso",v:pct+"%"},{l:"Días",v:day}]
+    .map(s=>`<div class="sstat"><div style="font-family:Syne,sans-serif;font-size:24px;font-weight:900;color:var(--a);">${s.v}</div><div style="font-size:11px;color:var(--m);">${s.l}</div></div>`).join("");
+}
+function copyUrl(){navigator.clipboard.writeText(document.getElementById("sUrl").textContent);toast("Copiado 🔗");}
+
+function playSound(){
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();[523,659,784].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=f;g.gain.setValueAtTime(.12,ac.currentTime+i*.1);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*.1+.15);o.start(ac.currentTime+i*.1);o.stop(ac.currentTime+i*.1+.15);});}catch(e){}
+}
+
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);}
+
+function toggleNight(){
+  const body=document.body;
+  const on=body.classList.toggle("night-mode");
+  const btn=document.getElementById("nightBtn");
+  if(btn)btn.textContent=on?"☀️":"🌙";
+  localStorage.setItem("yd3_night",on?"1":"0");
+}
+function handleStageTap(){
+  const state=calcPetState();
+  const lines=DIALOGS[state]||DIALOGS.happy;
+  showBigSpeech(lines[Math.floor(Math.random()*lines.length)]);
+  petCfg.xp=(petCfg.xp||0)+2;
+  save();updatePetStats();
+  playSound();
+}
+
+window.addEventListener("DOMContentLoaded",init);
+window.addEventListener("resize",()=>{
+  const c=document.getElementById("petPageCanvas");
+  if(c&&document.getElementById("sec-pet")&&document.getElementById("sec-pet").style.display!=="none"){
+    const s=c.parentElement;if(s){c.width=s.offsetWidth||400;c.height=s.offsetHeight||500;}
+  }
+});
+</script>
+</body>
+</html>
